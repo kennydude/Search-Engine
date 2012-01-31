@@ -25,6 +25,18 @@ Config.py
 
 	default_weather = "Your location"
 	weatherunderground_key = "key"
+	
+	widgets = []
+	search_widgets = []
+
+Widgets
+-------
+
+New! Widgets are small blocks of stuff which do some magical things.
+
+Currently we have
+
+* revision - Enable this and create "asset/revision.json" with a JSON array of strings and one will be shown randomly. This was made by @kennydude in order to revise for exams all of the time! :D
 
 How it's built
 --------------

@@ -1,0 +1,5 @@
+title=CyanogenMod
+link=http://cyanogenmod.com
+content=Awesome Android Mod
+official=True
+keywords=cyanogenmod,cyanogen,android,mod

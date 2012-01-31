@@ -1,0 +1,4 @@
+title=RGB Color Wheel
+link=http://www.colorspire.com/rgb-color-wheel/
+content=Color Wheel
+keywords=rgb,colors,html colors

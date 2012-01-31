@@ -1,0 +1,5 @@
+title=Alice Nine
+link=http://www.pscompany.co.jp/alicenine/
+content=Visual Kei Band
+official=True
+keywords=alice nine,alice9

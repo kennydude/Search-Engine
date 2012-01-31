@@ -1,0 +1,27 @@
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="asset/jquery.autocomplete-min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){
+	$("img.scaled").load(function(){
+		var img = $(this), width = img.width(), height = img.height();
+		img.css("max-width", "1000px !important");
+		if(width == height) {
+			img.width(200).height(200);
+		} else if(width > height) {
+			img.height(Math.round(height / width * 200)).width(200);
+			img.css("margin-top", (200 - img.height()) / 2);
+		} else {
+			img.width(Math.round(width / height * 200)).height(200);
+		}
+	});
+	$("#search").autocomplete({
+		lookup : [ 
+% for i in hashbang.keys():
+			'!${i}',
+% endfor
+		],
+		minChars:2,
+		delimiter: ' '
+	});
+});
+</script>

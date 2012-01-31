@@ -1,0 +1,5 @@
+title=Linux Kernel
+link=http://kernel.org
+content=The official home of the Linux Kernel!
+official=True
+keywords=Linux

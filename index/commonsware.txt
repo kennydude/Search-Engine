@@ -1,0 +1,5 @@
+title=CommonsWare Books
+link=http://commonsware.com/books
+content=Good books on building stuff for Android
+
+keywords=android

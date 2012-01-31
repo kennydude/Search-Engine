@@ -23,16 +23,16 @@ def youtubeUser(url, r):
 			go = True
 	
 	j = getJson("https://gdata.youtube.com/feeds/api/users/%s?alt=json" % u)
-	s = j['entry']['content']['$t'] + "<br/><table><tr>"
+	s = j['entry']['content']['$t'] + '<br/><ul class="block-grid five-up center mobile">'
 
-	j = getJson("https://gdata.youtube.com/feeds/api/users/%s/uploads?alt=json&max-results=6" % u)
+	j = getJson("https://gdata.youtube.com/feeds/api/users/%s/uploads?alt=json&max-results=5" % u)
 	for v in j['feed']['entry']:
 		tl = v['media$group']['media$thumbnail']
 		for th in tl:
 			if th['width'] == 120:
 				t = th['url']
-		s += "<td><a href='%s' title='%s'><img src='%s' /></a></td>" % ( v['media$group']['media$player'][0]['url'], v['title']['$t'], t )
-	s += '</tr></table>'
+		s += "<li><a href='%s' title='%s'><img src='%s' /></a></li>" % ( v['media$group']['media$player'][0]['url'], v['title']['$t'], t )
+	s += '</ul>'
 		
 	return {
 		"url" : r['Url'],
@@ -63,9 +63,11 @@ def gsmAreana(url, r):
 	}
 
 def twitter(url, r):
-	if url.split('.')[0].split('/')[-1] in ['dev', 'help']:
+	if url.split('.')[0].split('/')[-1] in ['dev', 'help', 'blog']:
 		return None
 	u = url.split('/')[-1]
+	if u in ['home']:
+		return None
 	j = getJson("http://api.twitter.com/1/users/show.json?id=%s" % u)
 	set_debug_info(j)
 
@@ -90,7 +92,7 @@ def tumblr(url, r):
 	u = u[2:-3]
 	j = json.loads(u)
 
-	s = "<table><tr><td>%s</td>" % j['tumblelog']['description']
+	s = '<ul class="block-grid five-up center mobile"><li>%s</li>' % j['tumblelog']['description']
 	for p in j['posts']:
 		c = ''
 		if p['type'] == "video":
@@ -101,8 +103,8 @@ def tumblr(url, r):
 			c = '<div class="window"><img src="%s" /><br/>%s</div>' % (p['photo-url-250'], p['photo-caption'])
 		elif p['type'] == "answer":
 			c = '<div class="window">Q: %s<br/>A: %s</div>' % (p['question'], p['answer'])
-		s += "<td>%s</td>" % c
-	s += "</tr></table>"
+		s += "<li>%s</li>" % c
+	s += "</ul>"
 
 	return {
 		"url" : url,
@@ -113,7 +115,11 @@ def tumblr(url, r):
 	}
 
 def facebook(url, r):
+	if url.split('.')[0].split('/')[-1] in ['developers', 'help']:
+		return None
 	u = url.split('/')[-1]
+	if u == '':
+		return None
 	j = getJson("http://graph.facebook.com/%s" % u)
 	set_debug_info(j)
 	if not 'picture' in j:
@@ -144,21 +150,69 @@ def stackExchange(url, r):
 	muv = 0
 	mub = ''
 	ab = ''
-	for a in q['answers']:
-		if a['up_vote_count'] > muv:
-			mub = a['body']
-		if a['accepted'] == True:
-			ab = a['body']
-	if mub != '':
-		s += "<strong>Most upvoted answer:</strong><br/>%s" % mub
-	if ab != '':
-		s += "<strong>Accepted Answer:</strong><br/>%s" % ab
+	if 'answers' in q:
+		s += "<strong>There are %s answers</strong><br/>" % len(q['answers'])
+		for a in q['answers']:
+			if a['up_vote_count'] > muv:
+				mub = a['body']
+			if a['accepted'] == True:
+				ab = a['body']
+		if mub != '':
+			s += "<strong>Most upvoted answer:</strong><br/>%s" % mub
+		if ab != '':
+			s += "<strong>Accepted Answer:</strong><br/>%s" % ab
+	else:
+		s += '<strong>There are no answers to this question</strong>'
 	
 	return {
 		"url" : url,
 		"display_url" : r['DisplayUrl'],
 		"title" : "Q: " + q['title'],
 		"snippet" : s,
+		"style" : "magic"
+	}
+
+def wikipedia(url, r):
+	s = getBeatifulXML('http://%s.m.wikipedia.org/wiki/%s' % (r['Url'].split(".wikipedia")[0].split("://")[1] ,r['Url'].split("/wiki/")[1]))
+	d = s.find(id="bodyContent").findAll("div")[0]
+	for a in d.findAll("a"): # Wikipedia links don't work otherwise due to site issue
+		if not a['href'][0:7] == 'http://':
+			a['href'] = 'http://en.wikipedia.org%s' % a['href']
+	return {
+		"url" : r['Url'],
+		"display_url" : r['DisplayUrl'],
+		"title" : r['Title'],
+		"snippet" : d,#.renderContents(),#.encode("UTF8"),
+		"style" : "magic"
+	}
+
+def androidMarket(url, r):
+	s = getBeatifulXML(r['Url'])
+	sn = '''
+<table>
+<tr><td>
+%s
+</td><td>
+<strong>%s</strong> by %s
+<br/>
+%s
+<hr/>
+%s
+</td></tr>
+</table>
+''' % (
+		s.find("div", **{"class":"doc-banner-icon"}).prettify(),
+		s.find("h1", **{"class":"doc-banner-title"}).string,
+		s.find("a", **{"class":"doc-header-link"}).string,
+		s.find(itemprop="aggregateRating").find("div")['title'],
+		s.find(id="doc-original-text").prettify()
+	)
+
+	return {
+		"url" : r['Url'],
+		"display_url" : r['DisplayUrl'],
+		"title" : r['Title'],
+		"snippet" : sn,
 		"style" : "magic"
 	}
 
@@ -169,5 +223,7 @@ magic = {
 	"twitter.com" : twitter,
 	".tumblr.com" : tumblr,
 	"facebook.com" : facebook,
-	"stackoverflow.com/questions/" : stackExchange
+	".wikipedia.org" : wikipedia,
+	"stackoverflow.com/questions/" : stackExchange,
+	"market.android.com/details" : androidMarket
 }

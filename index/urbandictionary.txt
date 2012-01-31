@@ -1,0 +1,5 @@
+title=UrbanDictionary.com
+link=http://urbandictionary.com
+content=The best dictionary ever
+official=True
+keywords=urbandictionary,dictionary

@@ -1,0 +1,5 @@
+title=LibreOffice
+link=http://www.libreoffice.org/
+content=Open-Source office suite!
+official=True
+keywords=office,libreoffice,openoffice,libre office,open office,word,writer,excel,powerpoint

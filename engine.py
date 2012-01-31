@@ -2,8 +2,9 @@
 @kennydude Search Engine
 '''
 import cgi, json, urllib2, sys, urllib, os.path, hashlib, time
-from string import Template
+import StringIO
 
+# TODO: Move these to a config file (which will generate python)
 redir_bang = {
 	"ddg" : "http://ddg.gg?q=%s",
 	"google" : "http://google.com/search?q=%s",
@@ -18,86 +19,69 @@ redir_bang = {
 	"wolfram" : "http://wolframalpha.com/input?i=%s",
 	"android" : "http://developer.android.com/search.html#q=%s&t=0",
 	"github" : "https://github.com/search?q=%s&type=Everything&repo=&langOverride=&start_value=1",
-	"market" : "https://market.android.com/search?q=%s&c=apps"
+	"market" : "https://market.android.com/search?q=%s&c=apps",
+	"tumblr" : "http://tumblr.com/tagged/%s",
+	"launchpad" : "https://launchpad.net/+search?field.text=%s",
+	"wikipedia" : "http://en.wikipedia.org/wiki/Special:Search?search=%s",
+	"psychwiki" : "http://www.psychwiki.com/wiki/Special:Search?search=%s",
+	"psychology" : "http://psychology.wikia.com/wiki/Special:Search?search=%s"
 }
 
 debug_output = True
-pre_output = open("asset/header.html", 'r').read()
-result_output = u'''
-<li class="result $style">
-	<div>
-		<strong>$title</strong><br/>
-		$snippet<br/>
-		<a href="$url">$display_url</a>
-	</div>
-</li>
-'''
 
-image_result_output = u'''
-<li class="result image">
-	<div>
-		<table><tr>$images</tr></table>
-		via $source
-	</div>
-</li>
-'''
+from mako.template import Template
+from mako.lookup import TemplateLookup
 
-image_in_result_output = u'''
-<td>
-<a href="$url">
-<img src="$image" class='scaled' /></a><br/>
-<div class="caption"><strong>$title</strong></div>by $user
-<a href="$url">$display_url</a>
-</td>
-'''
-
-end_output = u'''
-<li>
-<a href="?q=%(query)s&page=%(nextpage)s">More</a>
-</li>
-</ul>
-</div></div>
-<script type="text/javascript" src="jquery.js"></script>
-<script type="text/javascript">
-$(document).ready(function(){
-	$("img.scaled").load(function(){
-		var img = $(this), width = img.width(), height = img.height();
-		img.css("max-width", "1000px !important");
-		if(width == height) {
-			img.width(200).height(200);
-		} else if(width > height) {
-			img.height(Math.round(height / width * 200)).width(200);
-		} else {
-			img.width(Math.round(width / height * 200)).height(200);
-		}
-	});
-});
-</script>
-</body>
-</html>
-'''
+def tplate(f, context):
+	print get_tplate(f, context)
+	
+def get_tplate(f, context):
+	global redir_bang
+	hashbang = {"images" : "" }
+	hashbang.update(redir_bang)
+	context['hashbang'] = hashbang
+	l = TemplateLookup(directories=['asset/'])
+	t = l.get_template('%s.html' % f)
+	return t.render_unicode(**context).encode('UTF8')
 
 debug_info = ""
 def set_debug_info(v):
 	global debug_info
 	debug_info = v
 
-def openUrl(url, fresh=False):
+def openUrl(url, fresh=False, default="{}"):
+	global nocache
 	if fresh == True:
 		return urllib2.urlopen(url)
 	f = "%s.html" % hashlib.sha224(url).hexdigest()	
-	if os.path.exists(os.path.join("cache", f)):
+	if os.path.exists(os.path.join("cache", f)) and nocache == False:
 		if os.path.getmtime(os.path.join("cache", f)) > time.time() - (60 * 60 * 1):
 			return open(os.path.join("cache", f), "r")
 	c = open(os.path.join("cache", f), "w")
-	u = urllib2.urlopen(url)
-	c.write(u.read())
-	u.close()
-	c.close()
-	return openUrl(url)
+	try:
+		u = urllib2.urlopen(url)
+		c.write(u.read())
+		u.close()
+		c.close()
+		if nocache == True:
+			return open(os.path.join("cache", f), "r")
+		else:
+			return openUrl(url)
+	except Exception as ex:
+		c.seek(0)
+		c.write(default)
+		c.close()
+		o = StringIO()
+		o.write(default)
+		o.seek(0)
+		return o
 
-def getJson(url, fresh=False):
-	return json.load(openUrl(url, fresh))
+def getJson(url, fresh=False, default="{}"):
+	try:
+		return json.load(openUrl(url, fresh, default))
+	except Exception:
+		print "JSON ERROR FOR URL %s WITH JSON OF '%s'" % (url, openUrl(url, fresh, default).read())
+		return json.loads(default)
 
 def getBeatifulXML(url, fresh=False):
 	from BeautifulSoup import BeautifulSoup
@@ -170,18 +154,26 @@ urllib2.install_opener(opener)
 
 query = cgi.FieldStorage().getvalue('q')
 page = cgi.FieldStorage().getvalue('page')
+nocache = cgi.FieldStorage().getvalue('nocache')
+source = cgi.FieldStorage().getvalue('source')
+
 if not page:
 	page = 0
 else:
 	page = int(page)
+if not nocache:
+	nocache = False
+else:
+	nocache = True
 
 if not query:
+	import widget
 	print "Content-Type: text/html; charset=utf-8"
 	print ""
-	print open('asset/index.html', 'r').read()
+	tplate("index", {"widgets" : widget.doWidgets})
 	sys.exit(0)
 
-import config, goodies, magic
+import config, goodies, magic, sources
 
 # Now prepare results
 results = []
@@ -190,22 +182,14 @@ hashbang = None
 
 words = query.split(' ')
 
-if words[0] in goodies.goodies.keys():
-	try:
-		s = goodies.goodies[words[0]](' '.join(words[1:]))
-		if s != None:
-			results.append(s)
-	except Exception as ex:
-		results.append({
-			"style" : "error",
-			"title" : "An error occured: %s" % str(ex)
-		})
-
 raw_query = query
-for word in words:
-	if word[0] == "!":
-		hashbang = word[1:]
-		words.remove(word)
+try:
+	for word in words:
+		if word[0] == "!":
+			hashbang = word[1:]
+			words.remove(word)
+except IndexError:
+	pass
 
 query = ' '.join(words)
 q_query = urllib.quote(query)
@@ -221,9 +205,31 @@ if hashbang in redir_bang.keys():
 print "Content-Type: text/html; charset=utf-8"
 print ''
 
+if not source:
+	tplate("header", { "search" : query, "raw_query" : raw_query })
+
+	if len(config.search_widgets) != 0:
+		import widget
+		print '<li class="widgets">'
+		print widget.doWidgets(config.search_widgets)
+		print '</li>'
+
+	tplate("footer", { "query" : raw_query, "nextpage" : page + 1, "page" : page, "sources" : sources.sources })
+else:
+	# Here we go...
+	results = getattr(sources, source)(q_query, raw_query, page)
+	for result in results:
+		if "style" in result and os.path.exists("asset/result_%s.html" % result['style']):
+			tplate("result_%s" % result['style'], result)
+		else:
+			tplate("result", result)
+	sys.stdout.flush()
+# TODO: Forward images into this
+
+'''
 if hashbang == 'images':
 	# Images!: D
-	j = getJson("https://api.instagram.com/v1/tags/%s/media/recent?client_id=%s" % ( q_query, config.instagram_key ) )
+	j = getJson("https://api.instagram.com/v1/tags/%s/media/recent?client_id=%s" % ( q_query, config.instagram_key ), default='{ "data" : [] }' )
 	if len(j['data']) != 0:
 		result = {
 			"source" : "Instagram",
@@ -239,7 +245,7 @@ if hashbang == 'images':
 				"image" : r['images']['low_resolution']['url'],
 			})
 		results.append(result)
-	j = getJson("http://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=%s&text=%s&format=json&nojsoncallback=1&per_page=20" % (config.flickr_key, q_query) )
+	j = getJson("http://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=%s&text=%s&format=json&nojsoncallback=1&per_page=20" % (config.flickr_key, q_query), default='{ "photos" : { "photo" : [] } }' )
 	if len(j['photos']['photo']) != 0:
 		result = {
 			"source" : "Flickr",
@@ -258,15 +264,10 @@ if hashbang == 'images':
 
 
 # Generic Searches
-j = getJson("http://localhost/wiki/search.php?q=%s" % q_query)
-for r in j:
-	results.append({
-		"url" : u"http://localhost/wiki/doku.php?id=%s" % urllib.quote(r['id']),
-		"display_url" : "LocalWiki://%s" % r['id'],
-		"snippet" : r['snip'],
-		"title" : unicode(r['title']),
-		"style" : u"special"
-	})
+
+
+# Whoosh
+
 
 def add_normal(r):
 	global results
@@ -309,54 +310,12 @@ if len(words) == 1 and raw_query.startswith("http"):
 		"display_url" : "Archive.org of %s" % raw_query
 	})
 
-j = getJson("http://api.bing.net/json.aspx?sources=Web+RelatedSearch&AppId=%s&query=%s&Web.Count=10&Web.Offset=%s" % (config.bing_api_key, q_query, page * 10) )
 
-if 'Results' in j['SearchResponse']['Web']:
-	for r in j['SearchResponse']['Web']['Results']:
-		if 'Description' not in r:
-			r['Description'] = ''
-		go_magic = False
-		for m in magic.magic.keys():
-			if m in r['Url']:
-				go_magic = magic.magic[m]
-		if go_magic != False:
-			try:
-				set_debug_info("")
-				x = go_magic(r['Url'], r)
-				if x is not None:
-					results.append(x)
-				else:
-					add_normal(r)
-			except Exception as ex:
-				import traceback
-				results.append({
-					"style" : "error",
-					"title" : "An error occured: %s" % repr(ex) + "<br/>" + traceback.format_exc().replace("\n", "<br/>"),
-					"url" : r['Url'],
-					"snippet" : "<pre>%s</pre>" % debug_info
-				})
-				add_normal(r)
-		else:
-			add_normal(r)
 
-if 'RelatedSearch' in j['SearchResponse']:
-	s = "<ul>"
-	for r in j['SearchResponse']['RelatedSearch']['Results']:
-		s += "<li><a href='?q=%s'>%s</a></li>" % (urllib.quote(r['Title'].encode("utf8")), r['Title'])
-	s += "</ul>"
-	results.append({
-		"style" : "related_search bing",
-		"title" : "Releated Searches",
-		"snippet" : s
-	})
 
-print pre_output % { "search" : query, "raw_query" : raw_query }
 
-t = Template(result_output)
-it = Template(image_result_output)
-iit = Template(image_in_result_output)
 
-for result in results:
+	''
 	if result['style'] == 'image':
 		i = ''
 		for image in result['images']:
@@ -364,8 +323,10 @@ for result in results:
 		print it.safe_substitute({ "images" : i, "source" : result['source'] }).encode('UTF8')
 	else:
 		print t.safe_substitute(**result).encode('UTF8')
+	''
 
 if len(results) == 0:
 	print "NO RESULTS ;__;"
 
-print end_output % { "query" : raw_query, "nextpage" : page + 1}
+
+'''

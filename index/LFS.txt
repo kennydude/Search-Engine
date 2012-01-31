@@ -1,0 +1,5 @@
+title=Linux From Scratch
+link=http://www.linuxfromscratch.org/
+content=How to build Linux from Scratch!
+official=True
+keywords=LFS,Linux from Scratch

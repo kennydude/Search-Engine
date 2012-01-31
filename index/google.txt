@@ -1,0 +1,5 @@
+title=Google
+link=http://google.com?q=i+am+a+twat
+content=Search engine with the moto "don't be evil", but in fact will take over the universe one day
+official=True
+keywords=google,what will take over the universe

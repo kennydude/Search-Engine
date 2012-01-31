@@ -1,0 +1,5 @@
+title=Minecraft
+link=http://www.minecraft.net
+content=Block-based game
+official=True
+keywords=minecraft,block game

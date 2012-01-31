@@ -1,0 +1,5 @@
+title=Todo.TXT
+link=http://todotxt.com
+content=Todo.txt format
+official=True
+keywords=todotxt,todo.txt

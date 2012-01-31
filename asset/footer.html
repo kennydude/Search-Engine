@@ -1,0 +1,27 @@
+</ul>
+<div>
+<a href="?q=${query}&page=${nextpage}">More</a>
+</div>
+Created by @kennydude
+</div></div>
+<%include file="scripts.html" />
+<script type="text/javascript">
+
+var current_source = 0;
+
+$(document).ready(function(){
+% for source in sources:
+	$.get("search.cgi?q=${query}&page=${page}&source=${source.__name__}", function(data){
+		$("#results").append(data);
+		current_source = current_source + 1;
+		if(current_source < ${len(sources)}){
+			$("#wait").html("Loading from source " + (current_source+1) + " out of ${len(sources)}");
+		} else{
+			$("#wait").hide();
+		}
+	});
+% endfor
+});
+</script>
+</body>
+</html>

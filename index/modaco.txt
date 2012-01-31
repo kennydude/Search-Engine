@@ -1,0 +1,5 @@
+title=MoDaCo
+link=http://modaco.com
+content=Awesome android community
+official=True
+keywords=android,modaco

@@ -77,10 +77,13 @@ def random(query):
 def pythonLib(query):
 	try:
 		module = __import__(query)
+		s = ''
+		if module.__doc__:
+			s = module.__doc__.replace("\n", "<br/>")
 		return {
 			"style" : "goodies",
 			"title" : "Python Module: %s" % module.__name__,
-			"snippet" : module.__doc__.replace("\n", "<br/>"),
+			"snippet" : s,
 			"url" : "http://docs.python.org/library/%s.html" % module.__name__,
 			"display_url" : "Show on docs.python.org"
 		}
@@ -115,6 +118,30 @@ def weather(query):
 			"title" : "Weather for %s" % query
 		}
 
+def revision(query):
+	import json, random
+	j = json.load(open("asset/revision.json", 'r'))
+	if query == "all":
+		return {
+			"title" : "Revision",
+			"snippet" : '<hr/>'.join(j),
+			"style" : "goodies"
+		}
+	else:
+		return {
+			"title" : "Revision",
+			"snippet" : random.choice(j),
+			"style" : "goodies"
+		}
+
+def life(query):
+	if query == "the universe and everything":
+		return {
+			"title" : "Life The Universe and Everything",
+			"snippet" : "42",
+			"style" : "goodies"
+		}
+
 goodies = {
 	"binary" : intToBinary,
 	"random" : random,
@@ -122,5 +149,7 @@ goodies = {
 	"define" : dictionary,
 	"dictionary" : dictionary,
 	"sha1" : sha1,
-	"weather" : weather
+	"weather" : weather,
+	"revision" : revision,
+	"life" : life
 }
