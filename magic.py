@@ -115,9 +115,10 @@ def tumblr(url, r):
 	}
 
 def facebook(url, r):
-	if url.split('.')[0].split('/')[-1] in ['developers', 'help']:
+	if url.split('.')[0].split('/')[-1] in ['developers', 'help', 'apps']:
 		return None
 	u = url.split('/')[-1]
+	u = u.split('?')[0]
 	if u == '':
 		return None
 	j = getJson("http://graph.facebook.com/%s" % u)
