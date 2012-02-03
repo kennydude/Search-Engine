@@ -2,9 +2,10 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width" />
-<link rel="stylesheet" href="foundation.css">
-<title>Search results for ${search}</title>
-<%include file="styles.html" />
+<link rel="stylesheet" href="asset/styles.css" />
+<link rel="stylesheet" href="asset/foundation.css" />
+<link rel="shortcut icon" href="asset/favicon.png" />
+<title>[W] ${search}</title>
 </head>
 <body>
 <div class="container"><div class="row">
@@ -13,5 +14,11 @@
 </form></h1>
 <div class="alert-box" id="wait">
 Loading...
+</div>
+<div class="alert-box warning hide" id="geo-req">
+These results are not final. GeoLocation is required for this page to work properly
+</div>
+<div class="alert-box error hide" id="geo-err">
+GeoLocation has failed. Elements on the page may not work
 </div>
 <ul id="results">

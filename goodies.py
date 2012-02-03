@@ -101,21 +101,27 @@ def sha1(query):
 def weather(query):
 	import engine, config
 	if query == "":
-		query = config.default_weather
+		loc = engine.location()
+		if not loc:
+			return None
+		location = "where you are now"
+		query = "%s,%s" % (loc[0], loc[1])
+	else:
+		location = query
 	
 	j = engine.getJson("http://api.wunderground.com/api/%s/forecast/q/%s.json" % (config.weatherunderground_key, query))
 	if 'forecast' in j:
-		s = "<table><tr>"
-		for day in j['forecast']['txt_forecast']['forecastday']:
-			s += "<td><img src='%s' /><br/><strong>%s</strong><br/>%s</td>" % ( day['icon_url'], day['title'], day['fcttext'] )
-		s += "</tr></table>"	
+		s = '<ul class="block-grid five-up mobile">'
+		for day in j['forecast']['txt_forecast']['forecastday'][:5]:
+			s += "<li><img src='%s' /><br/><strong>%s</strong><br/>%s</li>" % ( day['icon_url'], day['title'], day['fcttext'] )
+		s += "</ul>"	
 	
 		return {
 			"snippet" : s,
 			"style" : "goodies",
 			"url" : "http://www.wunderground.com/",
 			"display_url" : "Powered by WeatherUnderground",
-			"title" : "Weather for %s" % query
+			"title" : "Weather for %s" % location
 		}
 
 def revision(query):
@@ -135,12 +141,22 @@ def revision(query):
 		}
 
 def life(query):
-	if query == "the universe and everything":
+	if query.lower().startswith("the universe and everything"):
 		return {
 			"title" : "Life The Universe and Everything",
 			"snippet" : "42",
 			"style" : "goodies"
 		}
+def where(query):
+	if query.lower().startswith("am i") or query.lower().startswith("me"):
+		from engine import location
+		loc = location()
+		if loc != None:
+			return {
+				"style" : "goodies",
+				"title" : "You are here:",
+				"snippet" : "<img src='http://maps.googleapis.com/maps/api/staticmap?center=%s&sensor=false&size=512x250&zoom=14' />" % "%s,%s" % (loc[0], loc[1])
+			}
 
 goodies = {
 	"binary" : intToBinary,
@@ -151,5 +167,8 @@ goodies = {
 	"sha1" : sha1,
 	"weather" : weather,
 	"revision" : revision,
-	"life" : life
+	"life" : life,
+	"where" : where, # Where am I?
+	"locate" : where, # Locate me
+	"find" : where, # Find me
 }

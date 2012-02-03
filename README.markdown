@@ -11,6 +11,8 @@ A few notes:
 * CGI needs enabling
 * I have a DokuWiki set up at http://localhost/wiki/ which you will need the search.php file from the doku folder
 
+Also, in order to clean-up the folders and to build the internal search index you need to run `python index.py`
+
 Config.py
 ---------
 
@@ -23,7 +25,7 @@ Config.py
 	dictionary_com_key = "key"
 	embedy_ly_key="key"
 
-	default_weather = "Your location"
+	# DEPRACTATED default_weather = "Your location"
 	weatherunderground_key = "key"
 	
 	widgets = []

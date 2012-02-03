@@ -18,7 +18,7 @@ def set_debug_info(v):
 def bing(q_query, raw_query, page):
 	results = []
 	import magic
-	j = getJson("http://api.bing.net/json.aspx?sources=Web+RelatedSearch&AppId=%s&query=%s&Web.Count=10&Web.Offset=%s" % (config.bing_api_key, q_query, page * 10), default='{ "SearchResponse" : { "Web" : { } } }' )
+	j = getJson("http://api.bing.net/json.aspx?sources=Web+RelatedSearch&AppId=%s&query=%s&Web.Count=10&Web.Offset=%s" % (config.bing_api_key, q_query, (page-1) * 10), default='{ "SearchResponse" : { "Web" : { } } }' )
 
 	if 'Results' in j['SearchResponse']['Web']:
 		for r in j['SearchResponse']['Web']['Results']:
@@ -33,6 +33,7 @@ def bing(q_query, raw_query, page):
 					set_debug_info("")
 					x = go_magic(r['Url'], r)
 					if x is not None:
+						x["style"] += " bing"
 						results.append(x)
 					else:
 						add_normal(r, results)
@@ -68,7 +69,6 @@ def whoosh(q_query, raw_query, page):
 			parser = QueryParser("keywords", internal_search.ix.schema)
 			myquery = parser.parse('"%s"' %raw_query)
 			w_results = searcher.search(myquery)
-			print w_results
 			for r in w_results:
 				s = ''
 				if 'official' in r:
@@ -150,9 +150,9 @@ def magic(q_query, raw_query, page):
 	results = []
 	words = raw_query.split(' ')
 	import goodies
-	if words[0] in goodies.goodies.keys():
+	if words[0].lower() in goodies.goodies.keys():
 		try:
-			s = goodies.goodies[words[0]](' '.join(words[1:]))
+			s = goodies.goodies[words[0].lower()](' '.join(words[1:]))
 			if s != None:
 				results.append(s)
 		except Exception as ex:

@@ -1,13 +1,46 @@
-<style>
 .clear{
 	clear: both;
 }
 body{
 	margin-top: 20px;
 }
+li.result:hover{
+	background:-webkit-gradient(linear, 0% 100%, 0% 0%, from(#D3D6D7), to(#FFFFFF));
+}
+li.result.duckduckgo > div{
+	background-image: url(duck.co.ico);
+}
+li.result.bing > div{
+	background-image: url(bing.ico);
+}
+li.result.internal_search > div{
+	background-image: url(favicon.png);
+}
+li.result.internal_search{
+	background:-webkit-gradient(linear, 0% 100%, 0% 0%, from(#E7B2FF), to(#FFFFFF));
+}
+li.result.internal_search:hover{
+	background:-webkit-gradient(linear, 0% 100%, 0% 0%, from(#E764FF), to(#FFFFFF));
+}
+
+li.result:hover, li.result.internal_search{
+	border: 2px solid rgba(0, 0, 0, 0.1);
+}
+li.result{
+	border: 2px solid #fff;
+	border-radius: 15px 15px;
+	padding: 5px;
+	text-shadow: 0px 1px rgba(255, 255, 255, 0.9);
+}
+
 li.result > div{
-	max-height: 300px;
+	padding-right: 30px;
+	background-position: 99% center;
+	background-repeat: no-repeat;
+}
+li.result div.internal{
 	overflow-x: auto ! important;
+	max-height: 300px;
 }
 li.result.special{
 	border: 4px solid red;
@@ -39,8 +72,11 @@ li.result.error{
 li.result.goodies:after{
 	content: "And the power of the goodies resides again! :D";
 }
+li.result.official:hover{
+	background:-webkit-gradient(linear, 0% 100%, 0% 0%, from(#FFFEFF), to(#FFFF3D));
+}
 li.result.official{
-	background-color: #F3F32D;
+	background:-webkit-gradient(linear, 0% 100%, 0% 0%, from(#FFFEB4), to(#FFFF3D));
 	padding: 5px;
 	border: 1px solid rgba(0, 0, 0, 0.1);
 }
@@ -64,7 +100,7 @@ li.result.image .caption{
 li.result.bing:last-of-type:after{
 	content: "Powered by Bing!";
 }
-li.result.special > div{
+li.result.special  div.internal{
 	overflow: scroll;
 }
 form{
@@ -90,9 +126,14 @@ table{
 	margin-top: -16px;	
 	box-shadow: #333 0px 0px 5px;
 }
+.center{
+	text-align: center;
+}
+.hide{
+	display: none;
+}
 #home .widget{
 	padding: 15px;
 	width: 300px;
 	margin: 0 auto;
 }
-</style>

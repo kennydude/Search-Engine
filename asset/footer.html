@@ -1,22 +1,68 @@
 </ul>
+% for source in sources:
+<ul id="results_${source.__name__}">
+</ul>
+% endfor
 <div>
-<a href="?q=${query}&page=${nextpage}">More</a>
+<div class="center">
+<ul class="pagination">
+% if page != 1:
+  <li class="unavailable"><a href="?q=${query}&page=${page-1}">&laquo;</a></li>
+% endif
+% for i in range(1, page)[:2]:
+	<li><a href="?q=${query}&page=${i}">${i}</a></li>
+% endfor
+  <li class="current"><a href="?q=${query}&page=${page}">${page}</a></li>
+% for i in range(page+1, page+3):
+	<li><a href="?q=${query}&page=${i}">${i}</a></li>
+% endfor
+  <li><a href="?q=${query}&page=${page+1}">&raquo;</a></li>
+</ul>
+</div>
+
 </div>
 Created by @kennydude
 </div></div>
 <%include file="scripts.html" />
 <script type="text/javascript">
+function request_location(){
+	// Called by functions in engine
+	if (navigator && navigator.geolocation) {
+		navigator.geolocation.getCurrentPosition(geo_success, geo_error);
+	} else {
+		$("#geo-err").show();
+	}
+}
+
+function geo_success(position){
+	document.location.href = document.location + "&lat=" + position.coords.latitude + "&long=" + position.coords.longitude;
+}
+function geo_error(){
+	$("#geo-err").show();
+}
+
+function redo_links(){
+	$("li.result").click(function(){
+		if($("a", this).attr("href")){
+			$("a", this).get(0).click();
+		}
+	});
+}
 
 var current_source = 0;
 
 $(document).ready(function(){
+	$(".hide").hide();
 % for source in sources:
-	$.get("search.cgi?q=${query}&page=${page}&source=${source.__name__}", function(data){
-		$("#results").append(data);
+	$.get("search.cgi?q=${query}&page=${page}&source=${source.__name__}${extra}", function(data){
+		$("#results_${source.__name__}").append(data);
+		redo_links();
 		current_source = current_source + 1;
 		if(current_source < ${len(sources)}){
+			document.title = "[" + (current_source+1) + "/${len(sources)}] " + "${search}";
 			$("#wait").html("Loading from source " + (current_source+1) + " out of ${len(sources)}");
 		} else{
+			document.title = "${search}";
 			$("#wait").hide();
 		}
 	});

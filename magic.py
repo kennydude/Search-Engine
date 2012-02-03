@@ -119,7 +119,7 @@ def facebook(url, r):
 		return None
 	u = url.split('/')[-1]
 	u = u.split('?')[0]
-	if u == '':
+	if u == '' or u in ['apps', 'help']:
 		return None
 	j = getJson("http://graph.facebook.com/%s" % u)
 	set_debug_info(j)
@@ -217,12 +217,32 @@ def androidMarket(url, r):
 		"style" : "magic"
 	}
 
+def github(url, r):
+	print url
+	if url.split('.')[0].split('/')[-1] not in ['developers', 'api', 'www', 'github']:
+		return None
+	p = url.split('github.com/')[1].split('/')
+	if len(p) == 2:
+		j = getJson("https://api.github.com/repos/%s/%s" % (p[0], p[1]) )	
+		return {
+			"url" : url,
+			"display_url" : "git://github.com/%s/%s" % (p[0], p[1]),
+			"snippet" : '''
+%s
+<br/>
+Stats: %s Forks, %s Open Issues and %s Watchers
+''' % (j['description'], j['forks'], j['open_issues'], j['watchers']),
+			"style" : "magic",
+			"title" : j['name']
+		}
+
 magic = {
 	"http://www.youtube.com/user/" : youtubeUser,
 	"youtube.com/watch?v=" : youtubeVideo,
 	"http://www.gsmarena.com/" : gsmAreana,
 	"twitter.com" : twitter,
 	".tumblr.com" : tumblr,
+	"github.com" : github,
 	"facebook.com" : facebook,
 	".wikipedia.org" : wikipedia,
 	"stackoverflow.com/questions/" : stackExchange,

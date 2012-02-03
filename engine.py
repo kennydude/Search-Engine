@@ -4,29 +4,6 @@
 import cgi, json, urllib2, sys, urllib, os.path, hashlib, time
 import StringIO
 
-# TODO: Move these to a config file (which will generate python)
-redir_bang = {
-	"ddg" : "http://ddg.gg?q=%s",
-	"google" : "http://google.com/search?q=%s",
-	"bing" : "http://bing.com?q=%s",
-	"yahoo" : "http://yahoo.com/search?p=%s",
-	"minewiki" : "http://www.minecraftwiki.net/Special:Search?search=%s",
-	"minecraftwiki" : "http://www.minecraftwiki.net/Special:Search?search=%s",
-	"minecraftforum" : "http://www.minecraftforum.net/index.php?app=core&module=search&do=search&search_term=%s",
-	"xda" : "http://www.google.com/cse?q=%s&cx=partner-pub-2900107662879704%%3Afs7umqefhnf",
-	"modaco" : "http://android.modaco.com/index.php?app=core&module=search&do=search&search_term=%s",
-	"youtube" : "http://youtube.com/results?search_query=%s",
-	"wolfram" : "http://wolframalpha.com/input?i=%s",
-	"android" : "http://developer.android.com/search.html#q=%s&t=0",
-	"github" : "https://github.com/search?q=%s&type=Everything&repo=&langOverride=&start_value=1",
-	"market" : "https://market.android.com/search?q=%s&c=apps",
-	"tumblr" : "http://tumblr.com/tagged/%s",
-	"launchpad" : "https://launchpad.net/+search?field.text=%s",
-	"wikipedia" : "http://en.wikipedia.org/wiki/Special:Search?search=%s",
-	"psychwiki" : "http://www.psychwiki.com/wiki/Special:Search?search=%s",
-	"psychology" : "http://psychology.wikia.com/wiki/Special:Search?search=%s"
-}
-
 debug_output = True
 
 from mako.template import Template
@@ -34,6 +11,17 @@ from mako.lookup import TemplateLookup
 
 def tplate(f, context):
 	print get_tplate(f, context)
+
+def location():
+	'''
+	Gets any location data
+	'''
+	lat = cgi.FieldStorage().getvalue('lat')
+	if not lat:
+		print "<script type='text/javascript'>$(document).ready(function(){request_location();});</script>"
+	else:
+		lon = cgi.FieldStorage().getvalue('long')
+		return (lat, lon)
 	
 def get_tplate(f, context):
 	global redir_bang
@@ -158,7 +146,7 @@ nocache = cgi.FieldStorage().getvalue('nocache')
 source = cgi.FieldStorage().getvalue('source')
 
 if not page:
-	page = 0
+	page = 1
 else:
 	page = int(page)
 if not nocache:
@@ -173,9 +161,10 @@ if not query:
 	tplate("index", {"widgets" : widget.doWidgets})
 	sys.exit(0)
 
-import config, goodies, magic, sources
+import config
 
 # Now prepare results
+from hashbang import redir_bang
 results = []
 
 hashbang = None
@@ -206,6 +195,7 @@ print "Content-Type: text/html; charset=utf-8"
 print ''
 
 if not source:
+	import sources
 	tplate("header", { "search" : query, "raw_query" : raw_query })
 
 	if len(config.search_widgets) != 0:
@@ -214,8 +204,15 @@ if not source:
 		print widget.doWidgets(config.search_widgets)
 		print '</li>'
 
-	tplate("footer", { "query" : raw_query, "nextpage" : page + 1, "page" : page, "sources" : sources.sources })
+	extra = ''
+	
+	l = location()
+	if l != None:
+		extra += '&lat=%s&long=%s' % (l[0], l[1])
+
+	tplate("footer", { "search" : query, "query" : raw_query, "nextpage" : page + 1, "page" : page, "sources" : sources.sources, "extra" : extra })
 else:
+	import goodies, magic, sources
 	# Here we go...
 	results = getattr(sources, source)(q_query, raw_query, page)
 	for result in results:
