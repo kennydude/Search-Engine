@@ -3,22 +3,22 @@
 <head>
 <link rel="stylesheet" href="foundation.css">
 <title>Search</title>
-<%include file="styles.html" />
+<%include file="microhead.html" />
 <style>
 body{ text-align: center; }
 </style>
 </head>
 <body id="home" onload="document.getElementById('search').focus();" onclick="document.getElementById('search').focus();">
-<div class="container"><div class="row">
-	<h1>Search</h1>
+<div class="container">
+	<h1 class="giant">Search</h1>
 	<form method="get" action="search.cgi">
-	<input class="big" type="text" id="search" value="" name="q" />
+	<input class="big search-query" type="text" id="search" value="" name="q" />
+	<button action="submit" class="btn btn-large btn-primary">Search</button>
 	</form>
 	<div id="widgets">
 	${widgets()}
 	</div>
 	Created by @kennydude
-</div>
 </div>
 <%include file="scripts.html" />
 </body>

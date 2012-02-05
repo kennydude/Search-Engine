@@ -1,24 +1,27 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width" />
-<link rel="stylesheet" href="asset/styles.css" />
-<link rel="stylesheet" href="asset/foundation.css" />
-<link rel="shortcut icon" href="asset/favicon.png" />
+<%include file="microhead.html" />
 <title>[W] ${search}</title>
 </head>
-<body>
+<body class="view_${view}">
 <div class="container"><div class="row">
+<div class="header">
 <h1><a href="?">Search</a> Results for <form method="get" action="search.cgi">
 <input class="big" type="text" id="search" value="${raw_query | h}" name="q" />
+<button action="submit" class="btn btn-large btn-primary">Search</button>
 </form></h1>
-<div class="alert-box" id="wait">
-Loading...
 </div>
-<div class="alert-box warning hide" id="geo-req">
+<div class="alert alert-info" id="wait">
+<span>Loading...</span>
+<div class="progress">
+	<div class="bar" style="width: 0%;"></div>
+</div>
+</div>
+<div class="alert hide" id="geo-req">
 These results are not final. GeoLocation is required for this page to work properly
 </div>
-<div class="alert-box error hide" id="geo-err">
+<div class="alert alert-error hide" id="geo-err">
 GeoLocation has failed. Elements on the page may not work
 </div>
 <ul id="results">

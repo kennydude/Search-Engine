@@ -24,7 +24,7 @@ def location():
 		return (lat, lon)
 	
 def get_tplate(f, context):
-	global redir_bang
+	from hashbang import redir_bang
 	hashbang = {"images" : "" }
 	hashbang.update(redir_bang)
 	context['hashbang'] = hashbang
@@ -78,22 +78,6 @@ def getBeatifulXML(url, fresh=False):
 def getXML(url, fresh=False):
 	import xml.etree.ElementTree as ET
 	return ET.parse(openUrl(url, fresh))
-
-__b58chars = '123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ'
-__b58base = len(__b58chars) # let's not bother hard-coding
-
-def base58(value):
-    """
-    encode integer 'value' as a base58 string; returns string
-    """
-
-    encoded = ''
-    while value >= __b58base:
-        div, mod = divmod(value, __b58base)
-        encoded = __b58chars[mod] + encoded # add to left
-        value = div
-    encoded = __b58chars[value] + encoded # most significant remainder
-    return encoded
 
 def debug(*args):
 	global debug_output
@@ -164,7 +148,8 @@ if not query:
 import config
 
 # Now prepare results
-from hashbang import redir_bang
+
+from hashbang import redir_bang, view_bang
 results = []
 
 hashbang = None
@@ -191,12 +176,16 @@ if hashbang in redir_bang.keys():
 	print ""
 	sys.exit(0)
 
+view = 'normal'
+if hashbang in view_bang.keys():
+	view = hashbang
+
 print "Content-Type: text/html; charset=utf-8"
 print ''
 
 if not source:
 	import sources
-	tplate("header", { "search" : query, "raw_query" : raw_query })
+	tplate("header", { "search" : query, "raw_query" : raw_query, "view" : view })
 
 	if len(config.search_widgets) != 0:
 		import widget
@@ -209,18 +198,29 @@ if not source:
 	l = location()
 	if l != None:
 		extra += '&lat=%s&long=%s' % (l[0], l[1])
-
+	
+	if view != 'normal':
+		sources.sources = view_bang[view] + sources.sources
+	
 	tplate("footer", { "search" : query, "query" : raw_query, "nextpage" : page + 1, "page" : page, "sources" : sources.sources, "extra" : extra })
 else:
 	import goodies, magic, sources
 	# Here we go...
-	results = getattr(sources, source)(q_query, raw_query, page)
-	for result in results:
-		if "style" in result and os.path.exists("asset/result_%s.html" % result['style']):
-			tplate("result_%s" % result['style'], result)
-		else:
-			tplate("result", result)
-	sys.stdout.flush()
+	if source is not None:
+		config.result_class = ''
+		config.pre_output = ''
+		print sources.magic
+		results = getattr(sources, source)(q_query, raw_query, page)
+		result_class = config.result_class
+
+		print config.pre_output
+		print '<ul class="results%s">' % result_class
+		for result in results:
+			if "style" in result and os.path.exists("asset/result_%s.html" % result['style']):
+				tplate("result_%s" % result['style'], result)
+			else:
+				tplate("result", result)
+		print '</ul>'
 # TODO: Forward images into this
 
 '''

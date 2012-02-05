@@ -1,24 +1,9 @@
-<li class="result image">
-	<div>
-		<ul class="block-grid five-up center mobile">
-			<% i = 1 %>
-			% for image in images:
-				<li>
-				<a href="${image['url']}">
-				<div class="image-holder">
-				<img src="${image['image']}" class='scaled' /></a>
-				</div>
-				<br/>
-				<div class="caption"><strong>${image['title']}</strong></div>by ${image['user']}
-				<a href="${image['url']}">${image['display_url']}</a>
-				</li>
-				<% i = i + 1 %>
-				% if i == 6:
-					<% i = 1 %>
-					</ul><div class="clear"></div><ul class="block-grid five-up mobile">
-				% endif
-			% endfor
-		</ul>
-		via ${source}
+<li class="image span2">
+	<div class="thumbnail">	
+		<a href="${url}">
+			<img src="${image}" title="${title}" class='scaled' />
+		</a>
 	</div>
+	<div class="caption"><strong>${title}</strong></div>by ${user}
+	<a href="${url}">${display_url}</a> via ${source}
 </li>

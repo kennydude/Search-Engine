@@ -21,3 +21,8 @@ redir_bang = {
 	"jquery" : "http://api.jquery.com/%s",
 	"icons" : "http://www.iconfinder.com/search/?q=%s"
 }
+
+# Now here is the view hashbang
+view_bang = {
+	"images" : ['flickr', 'instagram']
+}

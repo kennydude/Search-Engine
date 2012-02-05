@@ -91,7 +91,10 @@ def whoosh(q_query, raw_query, page):
 
 def localwiki(q_query, raw_query, page):
 	results = []
-	j = getJson("http://localhost/wiki/search.php?q=%s" % q_query, True)
+	try:
+		j = getJson("http://localhost/wiki/search.php?q=%s" % q_query, True)
+	except Exception:
+		return {}
 	for r in j:
 		results.append({
 			"url" : u"http://localhost/wiki/doku.php?id=%s" % urllib.quote(r['id']),
@@ -146,7 +149,7 @@ def ddg(q_query, raw_query, page):
 		})
 	return results
 
-def magic(q_query, raw_query, page):
+def goodies(q_query, raw_query, page):
 	results = []
 	words = raw_query.split(' ')
 	import goodies
@@ -161,7 +164,3 @@ def magic(q_query, raw_query, page):
 				"title" : "An error occured: %s" % str(ex)
 			})
 	return results
-
-sources = [
-	magic, whoosh, ddg, localwiki, bing
-]
