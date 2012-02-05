@@ -158,6 +158,22 @@ def where(query):
 				"snippet" : "<img src='http://maps.googleapis.com/maps/api/staticmap?center=%s&sensor=false&size=512x250&zoom=14' />" % "%s,%s" % (loc[0], loc[1])
 			}
 
+def test(query):
+	return {
+		"style" : "goodies",
+		"title" : "Test",
+		"snippet" : "Test OK"
+	}
+
+def user(query):
+	if query == 'agent':
+		import os
+		ua = os.environ['HTTP_USER_AGENT']
+		return {
+			"style" : "goodies",
+			"title" : "User Agent: %s" % ua
+		}
+
 goodies = {
 	"binary" : intToBinary,
 	"random" : random,
@@ -168,6 +184,8 @@ goodies = {
 	"weather" : weather,
 	"revision" : revision,
 	"life" : life,
+	"user" : user,
+	"test" : test,
 	"where" : where, # Where am I?
 	"locate" : where, # Locate me
 	"find" : where, # Find me

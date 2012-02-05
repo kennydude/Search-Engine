@@ -7,10 +7,10 @@
 <body class="view_${view}">
 <div class="container"><div class="row">
 <div class="header">
-<h1><a href="?">Search</a> Results for <form method="get" action="search.cgi">
-<input class="big" type="text" id="search" value="${raw_query | h}" name="q" />
-<button action="submit" class="btn btn-large btn-primary">Search</button>
-</form></h1>
+<span class="big"><a href="?">Search</a> Results for </span>
+<form method="get" action="search.cgi">
+<%include file="searchbox.html" />
+</form>
 </div>
 <div class="alert alert-info" id="wait">
 <span>Loading...</span>
@@ -23,5 +23,8 @@ These results are not final. GeoLocation is required for this page to work prope
 </div>
 <div class="alert alert-error hide" id="geo-err">
 GeoLocation has failed. Elements on the page may not work
+</div>
+<div id="bellow-head">
+<!-- Reserved for stuff like views etc. -->
 </div>
 <ul id="results">

@@ -125,8 +125,17 @@ input.big{
 	height: auto !important;
 	width: 300px;
 }
+.header .big{
+	font-size: 35px;
+	line-height: 36px;;
+}
+#vidplayer{
+	margin: 0 auto;
+	width: 700px;
+}
+iframe{ border: none; }
 .header{
-	margin-top: 20px;
+	margin: 20px 0px;
 }
 table{
 	margin: 0px;
@@ -137,13 +146,14 @@ table{
 	background: #333;
 	text-align: center;
 }
-.autocomplete{
-	cursor: pointer;
+#auto_container{
+	width: 250px;
+	margin: 0 auto;
 }
-.autocomplete-w1{
-	background: #fff;
-	margin-top: -16px;	
-	box-shadow: #333 0px 0px 5px;
+#autocomplete{
+	cursor: pointer;
+	width: 250px;
+	margin: 20px 0px;
 }
 .center{
 	text-align: center;
@@ -155,4 +165,7 @@ table{
 	padding: 15px;
 	width: 300px;
 	margin: 0 auto;
+}
+li.result{
+	margin-bottom: 10px;
 }

@@ -1,3 +1,8 @@
+import os
+ua = os.environ['HTTP_USER_AGENT'].lower()
+if 'firefox' in ua:
+	addons = 'https://addons.mozilla.org/en-US/firefox/search/?q=%s'
+
 redir_bang = {
 	"ddg" : "http://ddg.gg?q=%s",
 	"google" : "http://google.com/search?q=%s",
@@ -19,10 +24,14 @@ redir_bang = {
 	"psychwiki" : "http://www.psychwiki.com/wiki/Special:Search?search=%s",
 	"psychology" : "http://psychology.wikia.com/wiki/Special:Search?search=%s",
 	"jquery" : "http://api.jquery.com/%s",
+	"vimeo" : "http://vimeo.com/videos?search=%s",
 	"icons" : "http://www.iconfinder.com/search/?q=%s"
 }
+if addons is not None:
+	redir_bang['addons'] = addons
 
 # Now here is the view hashbang
 view_bang = {
-	"images" : ['flickr', 'instagram']
+	"images" : ['flickr', 'instagram'],
+	"videos" : ['youtube']
 }

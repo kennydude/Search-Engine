@@ -42,11 +42,11 @@ function geo_error(){
 }
 
 function redo_links(){
-	$("li.result").click(function(){
+	/*$("li.result").click(function(){
 		if($("a", this).attr("href")){
 			$("a", this).get(0).click();
-		}
-	});
+		} TODO
+	});*/
 }
 
 var current_source = 0;
@@ -80,6 +80,7 @@ else:
 			document.title = "${search}";
 			$("#wait .bar").css("width", '100%');
 			$("#wait").fadeOut(300);
+			$(document).trigger('loading-done');
 		}
 	});
 % endfor

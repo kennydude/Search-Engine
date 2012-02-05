@@ -24,10 +24,9 @@ def location():
 		return (lat, lon)
 	
 def get_tplate(f, context):
-	from hashbang import redir_bang
-	hashbang = {"images" : "" }
-	hashbang.update(redir_bang)
-	context['hashbang'] = hashbang
+	from hashbang import redir_bang, view_bang
+	context['hashbang'] = redir_bang
+	context['viewbang'] = view_bang
 	l = TemplateLookup(directories=['asset/'])
 	t = l.get_template('%s.html' % f)
 	return t.render_unicode(**context).encode('UTF8')
@@ -37,17 +36,24 @@ def set_debug_info(v):
 	global debug_info
 	debug_info = v
 
+def getUrlRequest(url):
+	import os
+	ua = os.environ['HTTP_USER_AGENT']
+	return urllib2.Request(url, headers={
+		"User-Agent" : ua
+	})
+
 def openUrl(url, fresh=False, default="{}"):
 	global nocache
 	if fresh == True:
-		return urllib2.urlopen(url)
+		return urllib2.urlopen(getUrlRequest(url))
 	f = "%s.html" % hashlib.sha224(url).hexdigest()	
 	if os.path.exists(os.path.join("cache", f)) and nocache == False:
 		if os.path.getmtime(os.path.join("cache", f)) > time.time() - (60 * 60 * 1):
 			return open(os.path.join("cache", f), "r")
 	c = open(os.path.join("cache", f), "w")
 	try:
-		u = urllib2.urlopen(url)
+		u = urllib2.urlopen(getUrlRequest(url))
 		c.write(u.read())
 		u.close()
 		c.close()
@@ -142,7 +148,7 @@ if not query:
 	import widget
 	print "Content-Type: text/html; charset=utf-8"
 	print ""
-	tplate("index", {"widgets" : widget.doWidgets})
+	tplate("index", {"widgets" : widget.doWidgets, "raw_query" : ""})
 	sys.exit(0)
 
 import config
@@ -202,14 +208,14 @@ if not source:
 	if view != 'normal':
 		sources.sources = view_bang[view] + sources.sources
 	
-	tplate("footer", { "search" : query, "query" : raw_query, "nextpage" : page + 1, "page" : page, "sources" : sources.sources, "extra" : extra })
+	tplate("footer", { "search" : query, "query" : raw_query, "nextpage" : page + 1, "page" : page, "sources" : sources.sources, "extra" : extra, "view" : view })
 else:
 	import goodies, magic, sources
 	# Here we go...
 	if source is not None:
 		config.result_class = ''
 		config.pre_output = ''
-		print sources.magic
+
 		results = getattr(sources, source)(q_query, raw_query, page)
 		result_class = config.result_class
 

@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html>
 <head>
-<link rel="stylesheet" href="foundation.css">
 <title>Search</title>
 <%include file="microhead.html" />
 <style>
@@ -12,8 +11,7 @@ body{ text-align: center; }
 <div class="container">
 	<h1 class="giant">Search</h1>
 	<form method="get" action="search.cgi">
-	<input class="big search-query" type="text" id="search" value="" name="q" />
-	<button action="submit" class="btn btn-large btn-primary">Search</button>
+	<%include file="searchbox.html" />
 	</form>
 	<div id="widgets">
 	${widgets()}
