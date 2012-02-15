@@ -1,0 +1,5 @@
+link=http://makotemplates.org
+title=Mako Templates
+official=True
+keywords=mako,mako templates
+content=Mako templating engine

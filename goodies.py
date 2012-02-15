@@ -111,10 +111,10 @@ def weather(query):
 	
 	j = engine.getJson("http://api.wunderground.com/api/%s/forecast/q/%s.json" % (config.weatherunderground_key, query))
 	if 'forecast' in j:
-		s = '<ul class="block-grid five-up mobile">'
+		s = []
 		for day in j['forecast']['txt_forecast']['forecastday'][:5]:
-			s += "<li><img src='%s' /><br/><strong>%s</strong><br/>%s</li>" % ( day['icon_url'], day['title'], day['fcttext'] )
-		s += "</ul>"	
+			s.append( "<img src='%s' /><br/><strong>%s</strong><br/>%s" % ( day['icon_url'], day['title'], day['fcttext'] ) )
+		s = engine.grid(s)	
 	
 		return {
 			"snippet" : s,
@@ -173,6 +173,46 @@ def user(query):
 			"style" : "goodies",
 			"title" : "User Agent: %s" % ua
 		}
+
+def website(raw_query):
+	results = []
+	import urllib
+	query = urllib.quote(raw_query)
+	# It's a URL
+	try:
+		j = oembed("http://api.embed.ly/1/oembed?key=9343ff4a0bdc11e1858e4040d3dc5c07&url=%s&maxwidth=500" % raw_query)
+		results.append({
+			"style" : "embed",
+			"title" : "Embed.ly",
+			"snippet" : j
+		})
+	except Exception:
+		pass
+	results.append({
+		"style" : "url",
+		"title" : "Go to url",
+		"url" : raw_query,
+		"display_url" : raw_query
+	})
+	results.append({
+		"style" : "url",
+		"title" : "Google Cache of URL",
+		"url" : "https://webcache.googleusercontent.com/search?q=cache:%s" % query,
+		"display_url" : "Google Cache of %s" % raw_query
+	})
+	results.append({
+		"style" : "url",
+		"title" : "Archive.org of URL",
+		"url" : "http://wayback.archive.org/web/*/%s" % query,
+		"display_url" : "Archive.org of %s" % raw_query
+	})
+	results.append({
+		"style" : "url",
+		"title" : "Translate with Google Translate",
+		"url" : "http://translate.google.com/translate?u=%s&act=url" % query,
+		"display_url" : "Google Translation of %s" % raw_query
+	})
+	return results
 
 goodies = {
 	"binary" : intToBinary,

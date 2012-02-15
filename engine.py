@@ -9,16 +9,23 @@ debug_output = True
 from mako.template import Template
 from mako.lookup import TemplateLookup
 
+def join_bxml(x):
+	o = ''
+	for i in x:
+		o += i.string
+	return o
+
 def tplate(f, context):
 	print get_tplate(f, context)
 
-def location():
+def location(output = True):
 	'''
 	Gets any location data
 	'''
 	lat = cgi.FieldStorage().getvalue('lat')
 	if not lat:
-		print "<script type='text/javascript'>$(document).ready(function(){request_location();});</script>"
+		if output:
+			print "<script type='text/javascript'>$(document).ready(function(){request_location();});</script>"
 	else:
 		lon = cgi.FieldStorage().getvalue('long')
 		return (lat, lon)
@@ -42,6 +49,13 @@ def getUrlRequest(url):
 	return urllib2.Request(url, headers={
 		"User-Agent" : ua
 	})
+
+def grid(items, width=2):
+	o = '<div class="row">'
+	for i in items:
+		o += '<div class="span%i">%s</div>' % (width, i)
+	o += '</div>'
+	return o
 
 def openUrl(url, fresh=False, default="{}"):
 	global nocache
@@ -150,6 +164,22 @@ if not query:
 	print ""
 	tplate("index", {"widgets" : widget.doWidgets, "raw_query" : ""})
 	sys.exit(0)
+elif query == 'opensearch:plugin':
+	print "Content-Type: text/xml; charset=utf-8"
+	print ""
+	import os
+	url = 'http://' + os.environ['SERVER_NAME'] + os.environ['REQUEST_URI'].replace('opensearch%3Aplugin', '{searchTerms}')
+	iurl = url.replace('search.cgi?q={searchTerms}', 'asset/favicon.png')
+	print '''<?xml version="1.0" encoding="UTF-8"?>  
+<OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/"> 
+	<ShortName>Search</ShortName>  
+	<Description>Search</Description>  
+	<InputEncoding>UTF8</InputEncoding>  
+	<Image width="24" height="24" type="image/png">%s</Image>  
+	<Url type="text/html" method="get" template="%s" />
+</OpenSearchDescription>  
+''' % (iurl, url)
+	sys.exit(0)
 
 import config
 
@@ -178,7 +208,13 @@ if hashbang is not None:
 	hashbang = hashbang.lower()
 
 if hashbang in redir_bang.keys():
-	print "Location: %s" % ( redir_bang[hashbang] % query )
+	if type(redir_bang[hashbang]) == tuple:
+		if len(words) == 0:
+			print "Location: %s" % redir_bang[hashbang][0]
+		else:
+			print "Location: %s" % ( redir_bang[hashbang][1] % query )
+	else:
+		print "Location: %s" % ( redir_bang[hashbang] % query )
 	print ""
 	sys.exit(0)
 
@@ -201,7 +237,7 @@ if not source:
 
 	extra = ''
 	
-	l = location()
+	l = location(False)
 	if l != None:
 		extra += '&lat=%s&long=%s' % (l[0], l[1])
 	
@@ -227,109 +263,4 @@ else:
 			else:
 				tplate("result", result)
 		print '</ul>'
-# TODO: Forward images into this
 
-'''
-if hashbang == 'images':
-	# Images!: D
-	j = getJson("https://api.instagram.com/v1/tags/%s/media/recent?client_id=%s" % ( q_query, config.instagram_key ), default='{ "data" : [] }' )
-	if len(j['data']) != 0:
-		result = {
-			"source" : "Instagram",
-			"images" : [],
-			"style" : "image"
-		}
-		for r in j['data']:
-			result['images'].append({
-				"url" : r['link'],
-				"display_url" : r['link'],
-				"title" : shorten(r['caption']['text'], 140),
-				"user" : r['user']['username'],
-				"image" : r['images']['low_resolution']['url'],
-			})
-		results.append(result)
-	j = getJson("http://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=%s&text=%s&format=json&nojsoncallback=1&per_page=20" % (config.flickr_key, q_query), default='{ "photos" : { "photo" : [] } }' )
-	if len(j['photos']['photo']) != 0:
-		result = {
-			"source" : "Flickr",
-			"images" : [],
-			"style" : "image"
-		}
-		for r in j['photos']['photo']:
-			result['images'].append({
-				"url" : "http://flickr.com/photos/%s/%s" % (r['owner'], r['id']),
-				"display_url" : "http://flic.kr/%s" % base58(int(r['id'])),
-				"title" : shorten(r['title'], 140),
-				"user" : r['owner'],
-				"image" : "http://farm%s.static.flickr.com/%s/%s_%s_t.jpg" % (r['farm'], r['server'], r['id'], r['secret']),
-			})
-		results.append(result)
-
-
-# Generic Searches
-
-
-# Whoosh
-
-
-def add_normal(r):
-	global results
-	results.append({
-		"url" : r['Url'],
-		"display_url" : r['DisplayUrl'],
-		"title" : r['Title'],
-		"snippet" : r['Description'],
-		"style" : "bing"
-	})
-
-
-if len(words) == 1 and raw_query.startswith("http"):
-	# It's a URL
-	try:
-		j = oembed("http://api.embed.ly/1/oembed?key=9343ff4a0bdc11e1858e4040d3dc5c07&url=%s&maxwidth=500" % raw_query)
-		results.append({
-			"style" : "embed",
-			"title" : "Embed.ly",
-			"snippet" : j
-		})
-	except Exception:
-		pass
-	results.append({
-		"style" : "url",
-		"title" : "Go to url",
-		"url" : raw_query,
-		"display_url" : raw_query
-	})
-	results.append({
-		"style" : "url",
-		"title" : "Google Cache of URL",
-		"url" : "https://webcache.googleusercontent.com/search?q=cache:%s" % raw_query,
-		"display_url" : "Google Cache of %s" % raw_query
-	})
-	results.append({
-		"style" : "url",
-		"title" : "Archive.org of URL",
-		"url" : "http://wayback.archive.org/web/*/%s" % raw_query,
-		"display_url" : "Archive.org of %s" % raw_query
-	})
-
-
-
-
-
-
-	''
-	if result['style'] == 'image':
-		i = ''
-		for image in result['images']:
-			i = i + iit.safe_substitute(image)
-		print it.safe_substitute({ "images" : i, "source" : result['source'] }).encode('UTF8')
-	else:
-		print t.safe_substitute(**result).encode('UTF8')
-	''
-
-if len(results) == 0:
-	print "NO RESULTS ;__;"
-
-
-'''

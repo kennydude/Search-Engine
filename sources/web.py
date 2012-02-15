@@ -18,7 +18,7 @@ def set_debug_info(v):
 def bing(q_query, raw_query, page):
 	results = []
 	import magic
-	j = getJson("http://api.bing.net/json.aspx?sources=Web+RelatedSearch&AppId=%s&query=%s&Web.Count=10&Web.Offset=%s" % (config.bing_api_key, q_query, (page-1) * 10), default='{ "SearchResponse" : { "Web" : { } } }' )
+	j = getJson("http://api.bing.net/json.aspx?sources=Web+RelatedSearch&AppId=%s&query=%s&Web.Count=10&Web.Offset=%s&Market=%s" % (config.bing_api_key, q_query, (page-1) * 10, config.default_location), default='{ "SearchResponse" : { "Web" : { } } }' )
 
 	if 'Results' in j['SearchResponse']['Web']:
 		for r in j['SearchResponse']['Web']['Results']:
@@ -73,12 +73,17 @@ def whoosh(q_query, raw_query, page):
 				s = ''
 				if 'official' in r:
 					s = ' official'
+				if not 'twitter' in r:
+					t = ''
+				else:
+					t = r['twitter']
 				results.append({
 					"style" : "internal_search%s" % s,
 					"title" : r['title'],
 					"url" : r['link'],
 					"snippet" : r['content'],
-					"display_url" :  r['link']
+					"display_url" :  r['link'],
+					"twitter" : t
 				})
 	except Exception as ex:
 		import traceback
@@ -163,4 +168,6 @@ def goodies(q_query, raw_query, page):
 				"style" : "error",
 				"title" : "An error occured: %s" % str(ex)
 			})
+	if len(words) == 1 and raw_query.startswith("http"):
+		results += goodies.website(raw_query)
 	return results

@@ -1,0 +1,5 @@
+title=BeatifulSoup
+link=http://www.crummy.com/software/BeautifulSoup/
+content=A library for XML in Python. Used in this search engine
+keywords=beatifulsoup,beatiful soup,python xml
+official=True

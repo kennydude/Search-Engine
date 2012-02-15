@@ -42,6 +42,19 @@ function geo_error(){
 }
 
 function redo_links(){
+	$("li.result.fullscreen").each(function(){
+		if($("img.fullscreen", this).length == 0){
+			$("<img>").addClass("fullscreen").attr("src", "img/projection-screen.png").css("cursor", "pointer").click(function(){
+				$("#cover, #ccontent").show();
+				$("#ccicontent").html($(".snippet", $(this).parent().parent()).html());
+			}).appendTo($(".title", this));
+		}
+	});
+	$("li.result a.twitter").click(function(){
+		$("#cover, #ccontent").show();
+		$("#ccicontent").html('<iframe src="asset/twitter_badge.html?' + $(this).attr("data-twitter") + '"></iframe>');
+		return false;
+	});
 	/*$("li.result").click(function(){
 		if($("a", this).attr("href")){
 			$("a", this).get(0).click();
@@ -52,6 +65,10 @@ function redo_links(){
 var current_source = 0;
 
 $(document).ready(function(){
+	$("#coverclose, #cover").click(function(){
+		$("#cover, #ccontent").hide();
+	});
+	$("#covercontent").click(function(){ return false; });
 	$(".hide").hide();
 % for source in sources:
 
@@ -61,7 +78,7 @@ if type(source) == str:
 else:
  source_name = source.__name__
 %>
-	$.get("search.cgi?q=${query}&page=${page}&source=${source}${extra}", function(data){
+	$.get("search.cgi?q=${query|u}&page=${page}&source=${source}${extra}", function(data){
 		$("#results_${source}").append(data);
 		$("#results_${source} .hider").toggle(function(){
 			$("#results_${source} ul").hide();
@@ -86,5 +103,18 @@ else:
 % endfor
 });
 </script>
+<!-- Lightbox -->
+<div id="cover">
+</div>
+<div id="ccontent">
+<div>
+<div class="right">
+	<a id="coverclose" class="btn" href="#">X</a>
+</div>
+<div id="ccicontent">
+	inside
+</div>
+</div>
+</div>
 </body>
 </html>

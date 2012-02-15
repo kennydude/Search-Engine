@@ -3,3 +3,4 @@ link=http://tumblr.com
 content=Social blogging site with lots of LOLs and hipsters
 official=True
 keywords=tumblr,tumbling,tumbler
+twitter=@tumblr

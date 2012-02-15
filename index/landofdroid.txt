@@ -3,3 +3,4 @@ link=http://www.landofdroid.com
 content=Android Blog
 official=True
 keywords=land of droid,lod
+twitter=@landofdroid

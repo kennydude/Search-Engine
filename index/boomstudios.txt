@@ -1,0 +1,6 @@
+title=Boom Studios
+link=http://www.boom-studios.com
+content=Comic publisher
+official=True
+keywords=boom studios,adventure time comic,boomstuidos
+twitter=@boomstudios

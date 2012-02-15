@@ -23,16 +23,17 @@ def youtubeUser(url, r):
 			go = True
 	
 	j = getJson("https://gdata.youtube.com/feeds/api/users/%s?alt=json" % u)
-	s = j['entry']['content']['$t'] + '<br/><ul class="block-grid five-up center mobile">'
+	s = j['entry']['content']['$t'] + '<br/>'
 
+	items = []	
 	j = getJson("https://gdata.youtube.com/feeds/api/users/%s/uploads?alt=json&max-results=5" % u)
 	for v in j['feed']['entry']:
 		tl = v['media$group']['media$thumbnail']
 		for th in tl:
 			if th['width'] == 120:
 				t = th['url']
-		s += "<li><a href='%s' title='%s'><img src='%s' /></a></li>" % ( v['media$group']['media$player'][0]['url'], v['title']['$t'], t )
-	s += '</ul>'
+		items.append( "<a href='%s' title='%s'><img src='%s' /></a>" % ( v['media$group']['media$player'][0]['url'], v['title']['$t'], t ) )
+	s += grid(items)
 		
 	return {
 		"url" : r['Url'],
@@ -84,27 +85,27 @@ def twitter(url, r):
 	}
 
 def tumblr(url, r):
-	import json
+	import json, engine
 	if "www.tumblr.com" in url:
 		return None
 	
-	u = urllib2.urlopen('/'.join(url.split('/')[0:3]) + '/api/read/json?callback=1&num=3').read()
+	u = openUrl('/'.join(url.split('/')[0:3]) + '/api/read/json?callback=1&num=3').read()
 	u = u[2:-3]
 	j = json.loads(u)
 
-	s = '<ul class="block-grid five-up center mobile"><li>%s</li>' % j['tumblelog']['description']
+	l = [ j['tumblelog']['description'] ]
 	for p in j['posts']:
 		c = ''
 		if p['type'] == "video":
 			c = p['video-player-250']
 		elif p['type'] == 'regular':
-			c = '<div class="window"><strong>%s</strong><br/>%s</div>' % (p['regular-title'], p['regular-body'])
+			c = u'<div class="window"><strong>%s</strong><br/>%s</div>' % (p['regular-title'], p['regular-body'])
 		elif p['type'] == "photo":
-			c = '<div class="window"><img src="%s" /><br/>%s</div>' % (p['photo-url-250'], p['photo-caption'])
+			c = u'<div class="window"><img src="%s" /><br/>%s</div>' % (p['photo-url-250'], p['photo-caption'])
 		elif p['type'] == "answer":
-			c = '<div class="window">Q: %s<br/>A: %s</div>' % (p['question'], p['answer'])
-		s += "<li>%s</li>" % c
-	s += "</ul>"
+			c = u'<div class="window">Q: %s<br/>A: %s</div>' % (p['question'], p['answer'])
+		l.append(c)
+	s = grid(l, 4)
 
 	return {
 		"url" : url,
@@ -184,7 +185,7 @@ def wikipedia(url, r):
 		"display_url" : r['DisplayUrl'],
 		"title" : r['Title'],
 		"snippet" : d,#.renderContents(),#.encode("UTF8"),
-		"style" : "magic"
+		"style" : "magic fullscreen"
 	}
 
 def androidMarket(url, r):
@@ -218,7 +219,6 @@ def androidMarket(url, r):
 	}
 
 def github(url, r):
-	print url
 	if url.split('.')[0].split('/')[-1] not in ['developers', 'api', 'www', 'github']:
 		return None
 	p = url.split('github.com/')[1].split('/')
@@ -236,6 +236,20 @@ Stats: %s Forks, %s Open Issues and %s Watchers
 			"title" : j['name']
 		}
 
+def comet(url, r):
+	if url.split('comet.co.uk/')[1].split('/')[0] == 'p': # Product
+		j = getBeatifulXML(url)
+		price = join_bxml(j.find(id='product-price').contents)
+		prod = join_bxml(j.find(id='product-header').find('h1').contents)
+		d = join_bxml(j.find(**{'class':'products-desciption-container'}).contents)
+		return {
+			"url" : r['Url'],
+			"style" : "magic",
+			"display_url" : r['DisplayUrl'],
+			"title" : prod,
+			"snippet" : u'<strong>%s</strong><br/>%s' % (price, d)
+		}
+
 magic = {
 	"http://www.youtube.com/user/" : youtubeUser,
 	"youtube.com/watch?v=" : youtubeVideo,
@@ -246,5 +260,6 @@ magic = {
 	"facebook.com" : facebook,
 	".wikipedia.org" : wikipedia,
 	"stackoverflow.com/questions/" : stackExchange,
-	"market.android.com/details" : androidMarket
+	"market.android.com/details" : androidMarket,
+	"comet.co.uk" : comet
 }

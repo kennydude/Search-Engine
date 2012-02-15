@@ -1,4 +1,5 @@
 var auto_at = 0;
+var selected_result = 0;
 
 function reauto(){
 	if(auto_at < 0){
@@ -94,4 +95,6 @@ $(document).ready(function(){
 			reauto();
 		}
 	});
+}).keydown(function(){
+	// TODO
 });

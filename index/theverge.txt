@@ -1,0 +1,6 @@
+title=The Verge
+link=http://www.theverge.com
+official=True
+content=Tech Blog
+twitter=@verge
+keywords=the verge,on the verge,ontheverge,theverge

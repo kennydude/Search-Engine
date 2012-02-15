@@ -3,3 +3,4 @@ link=http://tufugu.com
 content=Japan Blog
 official=True
 keywords=tofugu,tofugi
+twitter=@tofugu

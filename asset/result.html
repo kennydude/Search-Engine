@@ -1,10 +1,10 @@
 <li class="result ${style}">
 	<div><div class="internal">
 % if title:
-		<strong>${title}</strong><br/>
+		<strong class="title">${title}</strong><br/>
 % endif
 % if snippet:
-		${snippet}<br/>
+		<div class="snippet">${snippet}</div>
 % endif
 % if url:
 		<a href="${url}">
@@ -13,6 +13,12 @@ ${display_url}
 % else:
 ${url}
 % endif
+		</a>
+% endif
+% if twitter:
+		<br/>
+		<a class="twitter" data-twitter="${twitter}" href="http://twitter.com/${twitter}">
+			Twitter: ${twitter}
 		</a>
 % endif
 	</div></div>
