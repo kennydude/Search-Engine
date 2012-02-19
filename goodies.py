@@ -81,7 +81,7 @@ def pythonLib(query):
 		if module.__doc__:
 			s = module.__doc__.replace("\n", "<br/>")
 		return {
-			"style" : "goodies",
+			"style" : "goodies fullscreen",
 			"title" : "Python Module: %s" % module.__name__,
 			"snippet" : s,
 			"url" : "http://docs.python.org/library/%s.html" % module.__name__,

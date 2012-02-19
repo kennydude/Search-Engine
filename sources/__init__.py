@@ -14,6 +14,7 @@ if not source:
 else:
 	from sources.web import *
 	from sources.images import *
+	from sources.music import *
 	from sources.videos import *
 
 	sources = [

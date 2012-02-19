@@ -55,11 +55,25 @@ function redo_links(){
 		$("#ccicontent").html('<iframe src="asset/twitter_badge.html?' + $(this).attr("data-twitter") + '"></iframe>');
 		return false;
 	});
-	/*$("li.result").click(function(){
-		if($("a", this).attr("href")){
-			$("a", this).get(0).click();
-		} TODO
-	});*/
+	$("li.result").click(function(e){
+		if(e.target == $("a.thelink", this).get(0) && $("a.thelink", this).data("go") != "0"){
+			setTimeout(function(){
+				//console.log("resetting...", this);
+				$("a.thelink").data("go", "1");
+			}, 1000);
+			$("a.thelink", this).data("go", "0");
+			return true;
+		}	
+		if(e.ctrlKey == true){
+			$("a.thelink", this).attr("target", "_blank");
+		} else{
+			$("a.thelink", this).attr("target", "_self");
+		}
+		if($("a.thelink", this).attr("href")){
+			$("a.thelink", this).get(0).click();
+		}
+		return false;
+	});
 }
 
 var current_source = 0;

@@ -38,6 +38,8 @@ redir_bang = {
 	"icons" : "http://www.iconfinder.com/search/?q=%s",
 	"gmail" : ( "http://gmail.com", "http://mail.google.com/mail/#search/%s" ),
 	"translate" : ("http://translate.google.com", "http://translate.google.com/#auto|en|%s" ),
+	"imdb" : ("http://imdb.com", "http://www.imdb.com/find?q=%s&s=all"),
+	"lastfm" : ("http://last.fm", "http://www.last.fm/search?q=%s&from=ac"),
 
 	# Reference
 	"wikipedia" : "http://en.wikipedia.org/wiki/Special:Search?search=%s",
@@ -57,5 +59,10 @@ if addons is not None:
 # Now here is the view hashbang
 view_bang = {
 	"images" : ['flickr', 'instagram'],
-	"videos" : ['youtube']
+	"videos" : ['youtube'],
+	"music" : ['lastfm', 'youtube']
 }
+
+import config
+if config.asian_music == True:
+	view_bang['music'] = ["jpopasia"] + view_bang['music']

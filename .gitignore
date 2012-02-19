@@ -2,3 +2,4 @@ config.py
 cache/*.html
 cache/index/*
 cache/index
+*.pyc
